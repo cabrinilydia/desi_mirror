@@ -3,7 +3,8 @@
    and sends them to the mirror through Firebase. What the phone does
    depends on the mirror's chapter:
      Outfit -> tilt browses, flick tosses, tap wear
-     Bindi  -> tilt aims a crosshair, flick throws a bindi
+     Snacks -> tilt runs, flick (or JUMP) jumps
+   back / next are always there, so the phone can drive the whole piece.
 */
 
 const TILT_ON = 28; // *** degrees of tilt that flips to the next outfit
@@ -17,7 +18,7 @@ document.getElementById("room").textContent = room || "????";
 const $ = (id) => document.getElementById(id);
 
 let ref = null;
-let mode = "wait"; // "wardrobe" | "bindi" | "wait"
+let mode = "wait"; // "wardrobe" | "kitchen" | "wait"
 let gamma = 0;
 let beta = 0;
 let g0 = 0;
@@ -32,12 +33,17 @@ function setStatus(t) {
 }
 
 function setMode(m, chapterName) {
-  if (m === "bindi" && mode !== "bindi") recenter();
   mode = m;
   $("p-wardrobe").classList.toggle("on", m === "wardrobe");
-  $("p-bindi").classList.toggle("on", m === "bindi");
+  $("p-kitchen").classList.toggle("on", m === "kitchen");
   $("p-wait").classList.toggle("on", m === "wait");
-  $("waitch").textContent = chapterName ? "Mirror is on: " + chapterName : "…";
+  if (chapterName === "Start") {
+    $("waitch").textContent = "Mirror is waiting";
+    $("cnext").textContent = "start ▶";
+  } else {
+    $("waitch").textContent = chapterName ? "Mirror is on: " + chapterName : "…";
+    $("cnext").textContent = "next ▶";
+  }
 }
 
 function firebaseReady() {
@@ -62,7 +68,7 @@ if (!room) {
     $("outfit").textContent = v.outfit || "…";
     $("wearing").textContent = v.wearing ? "wearing: " + v.wearing : "";
     if (v.chapter === "Outfit") setMode("wardrobe");
-    else if (v.chapter === "Bindi") setMode("bindi");
+    else if (v.chapter === "Snacks") setMode("kitchen");
     else setMode("wait", v.chapter);
     setStatus("connected to room " + room);
   });
@@ -85,7 +91,7 @@ function send(action) {
   if (!ref) return;
   const a = aim();
   ref.set({ seq: Date.now(), action, tilt: Math.round(gamma), aimX: a.x, aimY: a.y });
-  if (navigator.vibrate) navigator.vibrate(action === "toss" || action === "flick" ? [20, 30, 40] : 25);
+  if (navigator.vibrate) navigator.vibrate(action === "toss" || action === "jump" ? [20, 30, 40] : 25);
   if (mode === "wardrobe") {
     const h = $("hanger");
     h.style.transform = action === "toss" ? "translateY(40px) rotate(60deg)" : action === "wear" ? "scale(1.25)" : h.style.transform;
@@ -107,8 +113,9 @@ function onOrientation(e) {
       send("prev");
       armed = false;
     } else if (Math.abs(gamma) < TILT_OFF) armed = true;
-  } else if (mode === "bindi") {
-    $("dot").style.transform = "translate(" + a.x * 100 + "px," + a.y * 100 + "px)";
+  } else if (mode === "kitchen") {
+    // the dot shows which way you're running
+    $("dot").style.transform = "translate(" + Math.max(-1, Math.min(1, gamma / 25)) * 100 + "px,0)";
   }
   // stream the tilt (about 12 times a second) so the mirror can follow it
   const now = Date.now();
@@ -132,7 +139,7 @@ function onMotion(e) {
   if (mag > FLICK && now - lastFlick > 900) {
     lastFlick = now;
     if (mode === "wardrobe") send("toss");
-    if (mode === "bindi") send("flick");
+    if (mode === "kitchen") send("jump");
   }
 }
 
@@ -153,10 +160,12 @@ async function start() {
   $("start").style.display = "none";
 }
 
+
 $("go").addEventListener("click", start);
 $("prev").addEventListener("click", () => send("prev"));
 $("next").addEventListener("click", () => send("next"));
 $("toss").addEventListener("click", () => send("toss"));
 $("wear").addEventListener("click", () => send("wear"));
-$("flick").addEventListener("click", () => send("flick"));
-$("center").addEventListener("click", recenter);
+$("jump").addEventListener("click", () => send("jump"));
+$("cnext").addEventListener("click", () => send("chapter-next"));
+$("cprev").addEventListener("click", () => send("chapter-prev"));

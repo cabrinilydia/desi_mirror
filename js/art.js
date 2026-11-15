@@ -76,6 +76,7 @@ function loadUserArt() {
   for (const j of USER_ART.jhumkas) load("jhumkas", j.file);
   for (const b of USER_ART.bangles) load("bangles", b.file);
   for (const v of USER_ART.vanity) load(v === "bangle_stand" ? "bangles" : "vanity", v);
+  if (typeof SNACKS !== "undefined") for (const s of SNACKS) load("snacks", s.file);
 }
 
 function loadOverrides() {
@@ -690,8 +691,10 @@ function buildArt() {
   if (!ART.bangles.length) ART.bangles.push({ img: null, name: "Glass" }); // drawn live if no images
   ART.outfits = [];
   for (const o of USER_ART.outfits) if (USER_IMG[o.file]) ART.outfits.push(Object.assign({ img: USER_IMG[o.file] }, o));
-  for (let i = 0; i < 6; i++)
-    ART.outfits.push({ img: OVERRIDE_IMG["outfit_" + (i + 1)] || artOutfit(i), name: OUTFIT_NAMES[i], shoulder: 0.667, cx: 0.5, span: 2.3, drop: 0.12 });
+  // the drawn outfits are only a fallback now, if the Pinterest ones fail to load
+  if (!ART.outfits.length)
+    for (let i = 0; i < 6; i++)
+      ART.outfits.push({ img: OVERRIDE_IMG["outfit_" + (i + 1)] || artOutfit(i), name: OUTFIT_NAMES[i], shoulder: 0.667, cx: 0.5, span: 2.3, drop: 0.12 });
   ART.chappal = OVERRIDE_IMG.chappal || artChappal();
   ART.aunty = OVERRIDE_IMG.aunty || artAunty(false);
   ART.auntyThrow = OVERRIDE_IMG.aunty_throw || OVERRIDE_IMG.aunty || artAunty(true);

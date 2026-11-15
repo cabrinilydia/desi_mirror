@@ -6,7 +6,7 @@
 
 const Steam = {
   name: "Steam",
-  usesPointer: false,
+  usesPointer: true, // so you can point at next › when you're done
   fog: null,
   fogAlpha: 1,
   breath: 0,
@@ -62,6 +62,7 @@ const Steam = {
       an.fftSize = 1024;
       src.connect(an);
       this.mic.an = an;
+      this.mic.ctx = ctx;
       this.mic.buf = new Float32Array(an.fftSize);
       this.mic.ok = true;
       if (ctx.state === "suspended") ctx.resume();

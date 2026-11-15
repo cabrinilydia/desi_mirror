@@ -1,4 +1,6 @@
-# Desi Mirror · देसी आईना
+# Desi Mirror · देसी கண்ணாடி
+
+(desi in Hindi, kannadi, mirror, in Tamil)
 
 DM3014 Interactive Devices, Final Project.
 
@@ -9,7 +11,7 @@ A desi dressing-table mirror on your screen that gets you ready for a family fun
 | 1 Steam | Breathe on the foggy mirror (into the mic), wipe it with your palm, write with a finger | mic input, hand tracking |
 | 2 Glam | Pick a bindi, jhumkas, bangles, shimmer, blush. They stick to your forehead, ears and wrists, and the jhumkas swing when you move | ml5 faceMesh + handPose |
 | 3 Outfit | Tilt your phone to flip through outfits, flick it to toss one on the floor, tap wear | phone gyroscope + accelerometer via Firebase |
-| 4 Bindi Flick | Tilt your phone to aim a crosshair at your reflection, flick it to throw a bindi. It sticks where it lands; between the brows is PERFECT | phone gyroscope + face tracking |
+| 4 Snack Mission | You, with your live face as the head and the outfit you picked as the body, hunt through the family kitchen for 10 snacks hidden in tins, dabbas, the rice sack, the pressure cooker and on top of the fridge. Phone: tilt to run, flick to jump. Finger: point left/right to run, open palm to jump | phone gyroscope + accelerometer, hand tracking, face tracking |
 | 5 Photo | Hold up both hands, 3-2-1, download a photo strip | hand tracking, canvas capture |
 
 Built with p5.js and ml5.js. The MediaPipe face and hand models are bundled in `lib/`, so it runs without a CDN.
@@ -23,6 +25,8 @@ The camera only works from `localhost` or `https`, so don't double-click `index.
 
 Use Chrome. Allow the camera and microphone. Sit about an arm's length from the laptop with your face in the middle.
 
+**No mouse needed.** Hold up an open palm to start. Hold a fingertip on any button (including back / next) to press it. Or scan the QR code on the start screen and use your phone: it has back / next for every chapter, and becomes the wardrobe in Outfit and the controller in Snack Mission.
+
 ### Keys
 
 | Key | Does |
@@ -33,7 +37,7 @@ Use Chrome. Allow the camera and microphone. Sit about an arm's length from the 
 | F | fullscreen |
 | B (hold) | breathe, if the mic isn't working |
 | ← → ↓ ↑ | Outfit: browse, toss, wear |
-| Space / click | Bindi Flick: throw a bindi (aim with the mouse) |
+| ← → / Space | Snack Mission: run / jump (R to play again when done) |
 | Space / S | Photo: take photos / save strip |
 
 You can press any button by holding your fingertip over it for a moment, or just click.
@@ -64,7 +68,7 @@ Without this, the Outfit chapter uses the arrow keys.
 
 ## Art
 
-Outfits, jhumkas, bangles and some vanity makeup are Pinterest illustrations, cut out of their backgrounds, in `assets/outfits`, `assets/jhumkas`, `assets/bangles` and `assets/vanity`. Credit to the illustrators, including @deepthidesigns, Zevar_sketch_by_Zoya and Dòra Harcos. Everything else (mirror, garland, bindis, the drawn vanity items, extra outfits) is drawn in code in `js/art.js`.
+Outfits, jhumkas, bangles and some vanity makeup are Pinterest illustrations, cut out of their backgrounds, in `assets/outfits`, `assets/jhumkas`, `assets/bangles` and `assets/vanity`. The snacks in Snack Mission (`assets/snacks`) are Pinterest food illustrations too, including the jalebi by rinianart.com. Credit to the illustrators, including @deepthidesigns, Zevar_sketch_by_Zoya, Dòra Harcos and rinianart. Everything else (mirror, garland, bindis, the drawn vanity items, extra outfits) is drawn in code in `js/art.js`.
 
 The Aunty chappal game is still in `js/ch_aunty.js`, switched off for now.
 
@@ -83,7 +87,8 @@ Drop PNGs into `assets/` with these names and they replace the drawn versions:
 - `js/art.js`: every cartoon, drawn in code
 - `js/ch_*.js`: one file per chapter
 - `js/ui.js`: buttons you can press by pointing
-- `js/remote.js`, `js/phone.js`: phone ↔ mirror through Firebase (the phone page switches between wardrobe and bindi launcher)
+- `js/ch_kitchen.js`: Snack Mission (kitchen, platform physics, hidden snacks, your face as the head)
+- `js/remote.js`, `js/phone.js`: phone ↔ mirror through Firebase (back / next everywhere, wardrobe in Outfit, controller in Snack Mission)
 - `lib/`: p5.js, ml5.js, qrcode.js, MediaPipe models
 
 ## Course links

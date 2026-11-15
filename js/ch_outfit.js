@@ -222,5 +222,5 @@ function drawOutfitThumb(idx, x, y, w, rot) {
 
 function sendState() {
   const idx = Outfit.current();
-  remoteState({ outfit: idx >= 0 ? ART.outfits[idx].name : "nothing left!", wearing: look.outfit >= 0 ? ART.outfits[look.outfit].name : "", chapter: CH[chapter].name });
+  remoteState({ outfit: idx >= 0 ? ART.outfits[idx].name : "nothing left!", wearing: look.outfit >= 0 ? ART.outfits[look.outfit].name : "", chapter: started ? CH[chapter].name : "Start" });
 }

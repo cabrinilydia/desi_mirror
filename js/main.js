@@ -1,13 +1,17 @@
 /* DM3014 Interactive Devices · Final Project
-   DESI MIRROR (देसी आईना)
+   DESI MIRROR (देसी கண்ணாடி: desi in Hindi, mirror in Tamil)
    A desi dressing-table mirror that gets you ready for a family function,
    in five chapters:
      1 Steam   breathe on the mirror (mic) and wipe it with your hand
      2 Glam    bindi, jhumkas, bangles, shimmer, blush that stick to you
      3 Outfit  phone tilt / flick (gyroscope) to pick and toss outfits
-     4 Bindi   phone tilt aims, a flick throws a bindi that sticks to you
+     4 Snacks  you (live face + chosen outfit) hunt for snacks hidden in
+               the family kitchen: phone tilt to run, flick / open palm to jump
      5 Photo   frame it, 3-2-1, download your photo strip
    (The Aunty chappal game is in js/ch_aunty.js, switched off for now.)
+
+   No mouse needed: open your palm to start, hold a fingertip on any
+   button to press it, or use the phone as a remote for everything.
 
    Webcam + ml5 faceMesh / handPose (computer vision), mic input,
    phone sensors through Firebase (remote interaction), all in p5.js.
@@ -22,6 +26,7 @@ let shakeUntil = 0;
 let L = {}; // layout
 let wallLayer, tableLayer;
 let CH = [];
+let palmSince = -1; // for "hold up your open palm to begin"
 
 function preload() {
   loadOverrides();
@@ -30,12 +35,16 @@ function preload() {
 function setup() {
   createCanvas(windowWidth, windowHeight);
   pixelDensity(1);
-  CH = [Steam, Glam, Outfit, BindiFlick, Photo];
+  CH = [Steam, Glam, Outfit, Kitchen, Photo];
   layout();
   buildArt();
   rebuildLayers();
   for (const c of CH) if (c.init) c.init();
   remoteStart(onRemoteAction);
+  // camera and mic start straight away, so an open palm can start the piece
+  startTracking();
+  Steam.startMic();
+  sendState();
 }
 
 function layout() {
@@ -77,6 +86,7 @@ function windowResized() {
   layout();
   rebuildLayers();
   Steam.resize();
+  Kitchen.resize();
 }
 
 // frame time in ms, capped so a hiccup doesn't make things jump
@@ -88,7 +98,14 @@ function draw() {
   updateTracking();
   updateVideoMap();
   const ch = CH[chapter];
-  updatePointer(started && ch.usesPointer);
+  updatePointer(started ? ch.usesPointer : true);
+  if (!started) {
+    // hold up an open palm for a second to begin
+    if (TRACK.hands.some(isOpenPalm)) {
+      if (palmSince < 0) palmSince = millis();
+      if (millis() - palmSince > 1000) begin();
+    } else palmSince = -1;
+  }
 
   push();
   if (millis() < shakeUntil) translate(random(-9, 9), random(-6, 6));
@@ -156,9 +173,10 @@ function drawHUD() {
   text("Desi Mirror", 24 * s + 2, 14 * s + 3);
   fill(PAL.haldi);
   text("Desi Mirror", 24 * s, 14 * s);
-  uiFont(15 * s + 3);
+  textFont("Baloo Thambi 2");
+  textSize(15 * s + 3);
   fill(255, 215, 225);
-  text("देसी आईना  ·  get ready, the aunties are waiting", 26 * s, 66 * s);
+  text("देसी கண்ணாடி  ·  get ready, the aunties are waiting", 26 * s, 66 * s);
   pop();
 
   // chapter pills, top right
@@ -197,8 +215,14 @@ function drawHUD() {
   text(pr, width / 2, py + 21 * s);
   pop();
 
+  // back / next: hold a fingertip on them (or use the phone). Locked to
+  // the phone while a chapter uses your finger to play (the kitchen game)
+  const lock = CH[chapter].lockNav && CH[chapter].lockNav();
+  const navY = L.tableTop + 64 * s;
   if (chapter < CH.length - 1)
-    uiPill("next", width - 160 * s, L.tableTop + 64 * s, 136 * s, 44 * s, "next  ›", () => goChapter(chapter + 1), { fill: PAL.marigold, noDwell: true });
+    uiPill("next", width - 160 * s, navY, 136 * s, 44 * s, "next  ›", () => goChapter(chapter + 1), { fill: PAL.marigold, noDwell: lock, dwellMs: 1100 });
+  if (chapter > 0)
+    uiPill("back", width - 290 * s, navY, 116 * s, 44 * s, "‹  back", () => goChapter(chapter - 1), { noDwell: lock, dwellMs: 1100 });
 
   // status lights, bottom left
   const st = [
@@ -235,22 +259,43 @@ function drawStart() {
   text("Desi Mirror", width / 2 + 3, height * 0.36 + 4);
   fill(PAL.haldi);
   text("Desi Mirror", width / 2, height * 0.36);
-  uiFont(26);
+  textFont("Baloo Thambi 2");
+  textSize(30);
   fill(255, 215, 225);
-  text("देसी आईना", width / 2, height * 0.47);
+  text("देसी கண்ணாடி", width / 2, height * 0.47);
   uiFont(20);
   fill(PAL.cream);
   text("Get ready for the family function. The aunties are waiting.", width / 2, height * 0.55);
+  // open palm to begin, with a ring that fills while you hold it
   const pulse = 0.6 + 0.4 * Math.sin(frameCount * 0.08);
+  const held = palmSince < 0 ? 0 : constrain((millis() - palmSince) / 1000, 0, 1);
+  const cy = height * 0.68;
+  noFill();
+  stroke(242, 159, 5, 120);
+  strokeWeight(6);
+  ellipse(width / 2, cy, 70, 70);
+  stroke(PAL.marigold);
+  if (held > 0) arc(width / 2, cy, 70, 70, -HALF_PI, -HALF_PI + held * TWO_PI);
+  noStroke();
+  textSize(34);
+  text("✋", width / 2, cy + 2);
   fill(242, 159, 5, 255 * pulse);
   uiFont(24);
-  text("click anywhere to begin", width / 2, height * 0.66);
+  text("hold up your open palm to begin", width / 2, cy + 64);
   uiFont(15);
   fill(255, 200, 210);
-  text("allow the camera and microphone when asked", width / 2, height * 0.71);
+  text("allow the camera and microphone when asked", width / 2, cy + 98);
+  // phone remote: scan to join before you start
+  if (REMOTE.enabled && REMOTE.qr) {
+    const q = 150;
+    image(REMOTE.qr, width - q - 40, height - q - 80, q, q);
+    uiFont(14);
+    fill(255, 215, 225);
+    text("scan for the phone remote", width - q / 2 - 40, height - 64);
+  }
   uiFont(13);
   fill(255, 190, 200);
-  text("outfit, jewellery and makeup illustrations from Pinterest artists incl. @deepthidesigns, Zevar_sketch_by_Zoya and Dòra Harcos", width / 2, height - 30);
+  text("outfit, jewellery, makeup and food illustrations from Pinterest artists incl. @deepthidesigns, Zevar_sketch_by_Zoya, Dòra Harcos and rinianart.com", width / 2, height - 30);
   pop();
 }
 
@@ -259,6 +304,7 @@ function begin() {
   started = true;
   startTracking();
   Steam.startMic();
+  if (Steam.mic.ctx && Steam.mic.ctx.state === "suspended") Steam.mic.ctx.resume();
   goChapter(0);
 }
 
@@ -271,6 +317,9 @@ function goChapter(i) {
 }
 
 function onRemoteAction(a) {
+  if (a === "begin" || (!started && a === "chapter-next")) return begin();
+  if (a === "chapter-next") return goChapter(Math.min(chapter + 1, CH.length - 1));
+  if (a === "chapter-prev") return goChapter(Math.max(chapter - 1, 0));
   if (CH[chapter].action) CH[chapter].action(a);
 }
 

@@ -59,7 +59,7 @@ function uiButton(id, x, y, r, iconFn, onPress, opt) {
 // pill-shaped text button
 function uiPill(id, x, y, w, h, label, onPress, opt) {
   opt = opt || {};
-  BTNS.push({ id, x: x + w / 2, y: y + h / 2, w, h, onPress, round: false, noDwell: !!opt.noDwell });
+  BTNS.push({ id, x: x + w / 2, y: y + h / 2, w, h, onPress, round: false, noDwell: !!opt.noDwell, dwellMs: opt.dwellMs });
   const hover = isOver({ x: x + w / 2, y: y + h / 2, w, h, round: false });
   push();
   noStroke();
@@ -99,7 +99,7 @@ function isOver(b, p) {
 
 function drawDwell(id, x, y, r, small) {
   if (dwell.id !== id || dwell.fired) return;
-  const t = constrain((millis() - dwell.t0) / DWELL_MS, 0, 1);
+  const t = constrain((millis() - dwell.t0) / (dwell.ms || DWELL_MS), 0, 1);
   noFill();
   stroke(PAL.marigoldDeep);
   strokeWeight(small ? 4 : 5);
@@ -136,8 +136,9 @@ function handleDwell() {
   if (dwell.id !== over.id) {
     dwell.id = over.id;
     dwell.t0 = millis();
+    dwell.ms = over.dwellMs || DWELL_MS;
     dwell.fired = false;
-  } else if (!dwell.fired && millis() - dwell.t0 > DWELL_MS) {
+  } else if (!dwell.fired && millis() - dwell.t0 > dwell.ms) {
     dwell.fired = true;
     over.onPress();
   }

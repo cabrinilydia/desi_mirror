@@ -162,6 +162,7 @@ function makeStrip(shots) {
   g.textFont("Baloo 2");
   g.textSize(16);
   const d = new Date();
-  g.text("देसी आईना  ·  " + d.getDate() + "." + (d.getMonth() + 1) + "." + d.getFullYear(), g.width / 2, g.height - foot / 2 - 4);
+  g.textFont("Baloo Thambi 2");
+  g.text("देसी கண்ணாடி  ·  " + d.getDate() + "." + (d.getMonth() + 1) + "." + d.getFullYear(), g.width / 2, g.height - foot / 2 - 4);
   return g;
 }

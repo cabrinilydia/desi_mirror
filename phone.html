@@ -74,6 +74,7 @@
       .pad::after { top: 50%; left: 10%; right: 10%; height: 2px; margin-top: -1px; }
       .dot { position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 50%; background: #c8102e; border: 3px solid var(--ink); }
       .big { font-size: 30px; padding: 22px 8px; }
+      .nav { max-width: 420px; margin-top: 4px; }
       #start {
         position: fixed; inset: 0;
         background: rgba(60, 8, 22, 0.96);
@@ -101,30 +102,32 @@
         <div class="row"><button class="mari" id="toss">toss</button><button class="gold" id="wear">wear</button></div>
       </section>
 
-      <!-- shown while the mirror is on chapter 4, Bindi Flick -->
-      <section class="panel" id="p-bindi">
+      <!-- shown while the mirror is on chapter 4, Snack Mission -->
+      <section class="panel" id="p-kitchen">
         <div class="card">
-          <p class="outfit">Bindi Flick</p>
+          <p class="outfit">Snack Mission</p>
           <div class="pad"><div class="dot" id="dot"></div></div>
         </div>
-        <p class="help">hold the phone like a remote<br />tilt to aim the crosshair on the mirror<br />flick it forward to throw a bindi</p>
-        <div class="row"><button class="gold big" id="flick">flick!</button></div>
-        <div class="row"><button id="center">re-centre aim</button></div>
+        <p class="help">tilt left / right to run<br />flick the phone (or tap JUMP) to jump<br />bump into tins and dabbas to open them</p>
+        <div class="row"><button class="gold big" id="jump">JUMP</button></div>
       </section>
 
       <!-- any other chapter -->
       <section class="panel on" id="p-wait">
         <div class="card">
           <p class="outfit" id="waitch">…</p>
-          <p class="help">Your phone joins in on <b>3 · Outfit</b> and <b>4 · Bindi</b>.<br />Go to one of those on the mirror.</p>
+          <p class="help" id="waithelp">Use <b>next ▶</b> to move through the mirror.<br />Your phone joins in on <b>3 · Outfit</b> and <b>4 · Snacks</b>.</p>
         </div>
       </section>
+
+      <!-- always there: move between chapters -->
+      <div class="row nav"><button id="cprev">◀ back</button><button class="mari" id="cnext">next ▶</button></div>
 
       <p class="status" id="status">connecting…</p>
     </main>
     <div id="start">
       <h1>Desi Mirror</h1>
-      <p class="sub">your phone is the wardrobe and the bindi launcher</p>
+      <p class="sub">your phone is the remote, the wardrobe and the game controller</p>
       <button id="go">start</button>
       <p class="help">allow motion access when asked</p>
     </div>
