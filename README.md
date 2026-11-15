@@ -7,9 +7,9 @@ A desi dressing-table mirror on your screen that gets you ready for a family fun
 | Chapter | What you do | Tech |
 |---|---|---|
 | 1 Steam | Breathe on the foggy mirror (into the mic), wipe it with your palm, write with a finger | mic input, hand tracking |
-| 2 Glam | Pick a bindi, lipstick, kajal, shimmer, blush, jhumkas, bangles. They stick to your forehead, ears, lips, eyes and wrists | ml5 faceMesh + handPose |
+| 2 Glam | Pick a bindi, jhumkas, bangles, shimmer, blush. They stick to your forehead, ears and wrists, and the jhumkas swing when you move | ml5 faceMesh + handPose |
 | 3 Outfit | Tilt your phone to flip through outfits, flick it to toss one on the floor, tap wear | phone gyroscope + accelerometer via Firebase |
-| 4 Aunty | An aunty pops up with opinions and throws chappals. Dodge with your head | face tracking as a game controller |
+| 4 Bindi Flick | Tilt your phone to aim a crosshair at your reflection, flick it to throw a bindi. It sticks where it lands; between the brows is PERFECT | phone gyroscope + face tracking |
 | 5 Photo | Hold up both hands, 3-2-1, download a photo strip | hand tracking, canvas capture |
 
 Built with p5.js and ml5.js. The MediaPipe face and hand models are bundled in `lib/`, so it runs without a CDN.
@@ -33,7 +33,7 @@ Use Chrome. Allow the camera and microphone. Sit about an arm's length from the 
 | F | fullscreen |
 | B (hold) | breathe, if the mic isn't working |
 | ← → ↓ ↑ | Outfit: browse, toss, wear |
-| R | Aunty: play again |
+| Space / click | Bindi Flick: throw a bindi (aim with the mouse) |
 | Space / S | Photo: take photos / save strip |
 
 You can press any button by holding your fingertip over it for a moment, or just click.
@@ -62,9 +62,13 @@ Without this, the Outfit chapter uses the arrow keys.
 2. Repo > Settings > Pages > Source: **Deploy from a branch**, Branch: `main`, folder `/ (root)`, Save.
 3. After a minute it's live at `https://<username>.github.io/<repo>/`. That link has https, so the camera and the phone motion sensors work.
 
-## Your own art
+## Art
 
-Drop PNGs into `assets/` with these names and they replace the drawn versions automatically:
+Outfits, jhumkas, bangles and some vanity makeup are Pinterest illustrations, cut out of their backgrounds, in `assets/outfits`, `assets/jhumkas`, `assets/bangles` and `assets/vanity`. Credit to the illustrators, including @deepthidesigns, Zevar_sketch_by_Zoya and Dòra Harcos. Everything else (mirror, garland, bindis, the drawn vanity items, extra outfits) is drawn in code in `js/art.js`.
+
+The Aunty chappal game is still in `js/ch_aunty.js`, switched off for now.
+
+Drop PNGs into `assets/` with these names and they replace the drawn versions:
 
 `bindi_1.png` … `bindi_6.png`, `jhumka.png` (hangs from the top centre), `bangles.png`, `vanity.png` (one whole vanity illustration), `outfit_1.png` … `outfit_6.png` (front view, neckline at the top centre), `aunty.png`, `aunty_throw.png`, `chappal.png`.
 
@@ -79,7 +83,7 @@ Drop PNGs into `assets/` with these names and they replace the drawn versions au
 - `js/art.js`: every cartoon, drawn in code
 - `js/ch_*.js`: one file per chapter
 - `js/ui.js`: buttons you can press by pointing
-- `js/remote.js`, `js/phone.js`: phone ↔ mirror through Firebase
+- `js/remote.js`, `js/phone.js`: phone ↔ mirror through Firebase (the phone page switches between wardrobe and bindi launcher)
 - `lib/`: p5.js, ml5.js, qrcode.js, MediaPipe models
 
 ## Course links

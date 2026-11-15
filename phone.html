@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-    <title>Desi Mirror · Wardrobe Remote</title>
+    <title>Desi Mirror · Phone</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Rozha+One&family=Baloo+2:wght@500;700&display=swap" rel="stylesheet" />
@@ -36,9 +36,10 @@
       }
       h1 { font-family: "Rozha One", Georgia, serif; color: var(--haldi); margin: 0; font-size: 34px; line-height: 1; }
       .sub { margin: 0; opacity: 0.85; font-size: 15px; }
+      .panel { display: none; width: 100%; max-width: 420px; flex-direction: column; align-items: center; gap: 12px; }
+      .panel.on { display: flex; }
       .card {
         width: 100%;
-        max-width: 420px;
         background: rgba(0, 0, 0, 0.18);
         border: 2px solid rgba(255, 243, 224, 0.25);
         border-radius: 18px;
@@ -48,12 +49,8 @@
       .now { font-size: 14px; opacity: 0.8; margin: 0; }
       .outfit { font-family: "Rozha One", Georgia, serif; font-size: 30px; margin: 2px 0 0; color: var(--cream); }
       .wearing { font-size: 14px; margin: 4px 0 0; color: var(--gold); min-height: 20px; }
-      .hanger {
-        width: 120px; height: 120px; margin: 6px auto 0;
-        transition: transform 0.12s linear;
-        font-size: 84px; line-height: 120px;
-      }
-      .row { display: flex; gap: 10px; width: 100%; max-width: 420px; }
+      .hanger { width: 120px; height: 120px; margin: 6px auto 0; transition: transform 0.12s linear; font-size: 84px; line-height: 120px; }
+      .row { display: flex; gap: 10px; width: 100%; }
       button {
         flex: 1;
         font-family: "Baloo 2", system-ui, sans-serif;
@@ -67,10 +64,16 @@
         box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
       }
       button:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0, 0, 0, 0.35); }
-      .wear { background: var(--gold); }
-      .toss { background: var(--marigold); }
+      .gold { background: var(--gold); }
+      .mari { background: var(--marigold); }
       .help { font-size: 14px; opacity: 0.85; text-align: center; line-height: 1.5; margin: 0; }
-      .status { font-size: 13px; opacity: 0.7; margin-top: auto; }
+      .status { font-size: 13px; opacity: 0.7; margin-top: auto; text-align: center; }
+      .pad { position: relative; width: 240px; height: 240px; margin: 4px auto; border-radius: 50%; border: 3px solid var(--gold); background: rgba(0, 0, 0, 0.2); }
+      .pad::before, .pad::after { content: ""; position: absolute; background: rgba(243, 215, 122, 0.4); }
+      .pad::before { left: 50%; top: 10%; bottom: 10%; width: 2px; margin-left: -1px; }
+      .pad::after { top: 50%; left: 10%; right: 10%; height: 2px; margin-top: -1px; }
+      .dot { position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 50%; background: #c8102e; border: 3px solid var(--ink); }
+      .big { font-size: 30px; padding: 22px 8px; }
       #start {
         position: fixed; inset: 0;
         background: rgba(60, 8, 22, 0.96);
@@ -83,27 +86,45 @@
   <body>
     <main>
       <h1>Desi Mirror</h1>
-      <p class="sub">wardrobe remote · room <b id="room">----</b></p>
-      <div class="card">
-        <p class="now">on the rail</p>
-        <p class="outfit" id="outfit">…</p>
-        <div class="hanger" id="hanger">👗</div>
-        <p class="wearing" id="wearing"></p>
-      </div>
-      <p class="help">tilt left / right to browse<br />flick the phone down to toss it on the floor<br />tap <b>wear</b> to put it on</p>
-      <div class="row">
-        <button id="prev">◀</button>
-        <button id="next">▶</button>
-      </div>
-      <div class="row">
-        <button class="toss" id="toss">toss</button>
-        <button class="wear" id="wear">wear</button>
-      </div>
+      <p class="sub">phone remote · room <b id="room">----</b></p>
+
+      <!-- shown while the mirror is on chapter 3, Outfit -->
+      <section class="panel" id="p-wardrobe">
+        <div class="card">
+          <p class="now">on the rail</p>
+          <p class="outfit" id="outfit">…</p>
+          <div class="hanger" id="hanger">👗</div>
+          <p class="wearing" id="wearing"></p>
+        </div>
+        <p class="help">tilt left / right to browse<br />flick the phone down to toss it on the floor<br />tap <b>wear</b> to put it on</p>
+        <div class="row"><button id="prev">◀</button><button id="next">▶</button></div>
+        <div class="row"><button class="mari" id="toss">toss</button><button class="gold" id="wear">wear</button></div>
+      </section>
+
+      <!-- shown while the mirror is on chapter 4, Bindi Flick -->
+      <section class="panel" id="p-bindi">
+        <div class="card">
+          <p class="outfit">Bindi Flick</p>
+          <div class="pad"><div class="dot" id="dot"></div></div>
+        </div>
+        <p class="help">hold the phone like a remote<br />tilt to aim the crosshair on the mirror<br />flick it forward to throw a bindi</p>
+        <div class="row"><button class="gold big" id="flick">flick!</button></div>
+        <div class="row"><button id="center">re-centre aim</button></div>
+      </section>
+
+      <!-- any other chapter -->
+      <section class="panel on" id="p-wait">
+        <div class="card">
+          <p class="outfit" id="waitch">…</p>
+          <p class="help">Your phone joins in on <b>3 · Outfit</b> and <b>4 · Bindi</b>.<br />Go to one of those on the mirror.</p>
+        </div>
+      </section>
+
       <p class="status" id="status">connecting…</p>
     </main>
     <div id="start">
       <h1>Desi Mirror</h1>
-      <p class="sub">your phone is the wardrobe</p>
+      <p class="sub">your phone is the wardrobe and the bindi launcher</p>
       <button id="go">start</button>
       <p class="help">allow motion access when asked</p>
     </div>

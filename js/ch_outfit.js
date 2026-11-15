@@ -66,7 +66,7 @@ const Outfit = {
       const F = faceInfo();
       const to = F ? vm(fk(152)) : { x: L.mirror.x + L.mirror.w / 2, y: L.mirror.y + L.mirror.h * 0.75 };
       this.flying.push({ idx, kind: "wear", t: 0, from: { x: h.x, y: h.y + 120 * L.s }, to, rot0: 0, rot1: 0 });
-      this.say("Wearing: " + OUTFIT_NAMES[idx]);
+      this.say("Wearing: " + ART.outfits[idx].name);
     }
     sendState();
   },
@@ -144,17 +144,17 @@ const Outfit = {
       line(0, 18 * s, -70 * s, 46 * s);
       line(0, 18 * s, 70 * s, 46 * s);
       line(-70 * s, 46 * s, 70 * s, 46 * s);
-      const img = ART.outfits[idx];
-      const w = 210 * s;
-      const hh = (w * img.height) / img.width;
-      image(img, -w / 2, 34 * s, w, hh);
+      // fit the outfit inside a 230 x 330 box under the hanger
+      const img = ART.outfits[idx].img;
+      const k = Math.min((230 * s) / img.width, (330 * s) / img.height);
+      image(img, (-img.width * k) / 2, 34 * s, img.width * k, img.height * k);
       pop();
       push();
       uiFont(20, true);
       fill(PAL.cream);
       noStroke();
       textAlign(CENTER, TOP);
-      text(OUTFIT_NAMES[idx] + "   (" + ((this.cur % this.rail.length) + 1) + "/" + this.rail.length + ")", h.x, R.y + 4 * s - 28 * s);
+      text(ART.outfits[idx].name + "   (" + ((this.cur % this.rail.length) + 1) + "/" + this.rail.length + ")", h.x, R.y + 4 * s - 28 * s);
       pop();
     } else {
       push();
@@ -208,8 +208,11 @@ const Outfit = {
 };
 
 function drawOutfitThumb(idx, x, y, w, rot) {
-  const img = ART.outfits[idx];
-  const h = (w * img.height) / img.width;
+  const img = ART.outfits[idx].img;
+  // w is the size of the longer side, so tall gowns and wide kurtis match
+  const k = w / Math.max(img.width, img.height);
+  const h = img.height * k;
+  w = img.width * k;
   push();
   translate(x, y);
   rotate(rot);
@@ -219,5 +222,5 @@ function drawOutfitThumb(idx, x, y, w, rot) {
 
 function sendState() {
   const idx = Outfit.current();
-  remoteState({ outfit: idx >= 0 ? OUTFIT_NAMES[idx] : "nothing left!", wearing: look.outfit >= 0 ? OUTFIT_NAMES[look.outfit] : "", chapter: CH[chapter].name });
+  remoteState({ outfit: idx >= 0 ? ART.outfits[idx].name : "nothing left!", wearing: look.outfit >= 0 ? ART.outfits[look.outfit].name : "", chapter: CH[chapter].name });
 }

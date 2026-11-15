@@ -7,12 +7,13 @@
 const look = {
   bindi: -1, // index into ART.bindis, -1 = none
   lips: -1, // index into LIP_SHADES
-  kajal: false,
+  kajal: false, // (not in the tray any more)
   shimmer: false,
   blush: false,
-  jhumka: false,
-  bangles: false,
+  jhumka: -1, // index into ART.jhumkas, -1 = none
+  bangles: -1, // index into ART.bangles, -1 = none
   outfit: -1, // index into ART.outfits
+  flicked: [], // bindis thrown in the Bindi Flick chapter: {b, u, v} in face units
 };
 
 // *** lipstick shades
@@ -49,10 +50,11 @@ function drawLook() {
     if (look.lips >= 0) drawLips(F);
     if (look.outfit >= 0) drawOutfitOn(F);
   }
-  if (look.bangles) drawBanglesOn();
+  if (look.bangles >= 0) drawBanglesOn();
   if (F) {
-    if (look.jhumka) drawJhumkasOn(F);
+    if (look.jhumka >= 0) drawJhumkasOn(F);
     if (look.bindi >= 0) drawBindiOn(F);
+    if (look.flicked.length) drawFlickedOn(F);
   }
 }
 
@@ -216,12 +218,13 @@ function drawJhumkasOn(F) {
     const dy = p.y - c.y;
     const d = Math.hypot(dx, dy) || 1;
     p = { x: p.x + (dx / d) * fw * 0.035, y: p.y + (dy / d) * fw * 0.035 };
-    const h = fw * 0.42;
-    const w = (h * ART.jhumka.width) / ART.jhumka.height;
+    const J = ART.jhumkas[look.jhumka];
+    const h = fw * J.len;
+    const w = (h * J.img.width) / J.img.height;
     push();
     translate(p.x, p.y);
     rotate(jhumkaSwing[e.s]);
-    image(ART.jhumka, -w / 2, -h * 0.04, w, h);
+    image(J.img, -w / 2, -h * 0.04, w, h);
     pop();
   }
 }
@@ -236,11 +239,15 @@ function drawBanglesOn() {
     const ay = (w.y - m.y) / (hs || 1);
     const ang = Math.atan2(ay, ax);
     push();
-    if (ART.bangles) {
-      translate(w.x + ax * hs * 0.45, w.y + ay * hs * 0.45);
+    const B = ART.bangles[look.bangles].img;
+    if (B) {
+      // the stack runs down the forearm from just below the wrist
+      const bw = hs * 1.05;
+      const bh = bw * (B.height / B.width);
+      translate(w.x + ax * (hs * 0.15 + bh / 2), w.y + ay * (hs * 0.15 + bh / 2));
       rotate(ang - HALF_PI);
       imageMode(CENTER);
-      image(ART.bangles, 0, 0, hs * 1.1, hs * 1.1 * (ART.bangles.height / ART.bangles.width));
+      image(B, 0, 0, bw, bh);
     } else {
       noFill();
       for (let k = 0; k < 6; k++) {
@@ -262,15 +269,56 @@ function drawBanglesOn() {
 }
 
 function drawOutfitOn(F) {
-  const img = ART.outfits[look.outfit];
+  const O = ART.outfits[look.outfit];
+  const img = O.img;
   const chin = vm(fk(152));
   const fw = F.w * L.vs;
-  // *** paper-doll size: shoulders about 2.3 face-widths across
-  const w = fw * 2.3 * (300 / 220);
+  // paper-doll: scale so the shoulders are O.span face-widths across,
+  // then hang it O.drop face-widths below the chin
+  const w = (fw * O.span) / O.shoulder;
   const h = (w * img.height) / img.width;
   push();
-  translate(chin.x, chin.y + fw * 0.02);
+  translate(chin.x, chin.y + fw * O.drop);
   rotate(F.roll * 0.5);
-  image(img, -w / 2, -h * 0.03, w, h);
+  image(img, -w * O.cx, 0, w, h);
+  pop();
+}
+
+// face-relative frame used by Bindi Flick: origin = the ideal bindi spot,
+// units = face widths, axes turned with the head
+function bindiOrigin() {
+  return vm(lerpPt(fk(9), fk(151), 0.3));
+}
+
+function faceToScreen(F, u, v) {
+  const o = bindiOrigin();
+  const fw = F.w * L.vs;
+  const c = Math.cos(F.roll);
+  const s = Math.sin(F.roll);
+  return { x: o.x + (u * c - v * s) * fw, y: o.y + (u * s + v * c) * fw };
+}
+
+function screenToFace(F, x, y) {
+  const o = bindiOrigin();
+  const fw = F.w * L.vs;
+  const dx = (x - o.x) / fw;
+  const dy = (y - o.y) / fw;
+  const c = Math.cos(-F.roll);
+  const s = Math.sin(-F.roll);
+  return { u: dx * c - dy * s, v: dx * s + dy * c };
+}
+
+function drawFlickedOn(F) {
+  const fw = F.w * L.vs;
+  push();
+  imageMode(CENTER);
+  for (const b of look.flicked) {
+    const p = faceToScreen(F, b.u, b.v);
+    push();
+    translate(p.x, p.y);
+    rotate(F.roll + b.rot);
+    image(ART.bindis[b.b], 0, 0, fw * 0.12, fw * 0.12);
+    pop();
+  }
   pop();
 }

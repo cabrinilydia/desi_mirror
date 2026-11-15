@@ -41,7 +41,45 @@ const OVERRIDES = [
 ];
 const OVERRIDE_IMG = {};
 
+// Leo's Pinterest picks, cut out of their backgrounds (assets/<folder>/<file>.png).
+// shoulder = how wide the shoulders are as a fraction of the image,
+// cx = where the neckline's centre is, span = shoulder width in face-widths
+// on you, drop = how far below your chin the garment starts (face-widths)
+const USER_ART = {
+  outfits: [
+    { file: "outfit_saree", name: "Rani Pink Saree", shoulder: 0.91, cx: 0.52, span: 2.4, drop: 0.3 },
+    { file: "outfit_lehenga", name: "Lehenga", shoulder: 0.263, cx: 0.47, span: 1.7, drop: 0.45 },
+    { file: "outfit_gown", name: "Anarkali Gown", shoulder: 0.285, cx: 0.469, span: 1.7, drop: 0.45 },
+    { file: "outfit_kurta_palazzo", name: "Block-print Kurta", shoulder: 0.576, cx: 0.505, span: 2.4, drop: 0.3 },
+    { file: "outfit_kurti", name: "Paisley Kurti", shoulder: 0.623, cx: 0.492, span: 2.4, drop: 0.3 },
+    { file: "outfit_set_cream", name: "Chikankari Set", shoulder: 0.517, cx: 0.532, span: 1.7, drop: 0.45 },
+    { file: "outfit_set_blue", name: "Indigo Kurta Set", shoulder: 0.51, cx: 0.463, span: 1.7, drop: 0.45 },
+  ],
+  jhumkas: [
+    { file: "jhumka_gold", name: "Gold Tiers", len: 0.62 },
+    { file: "jhumka_blue", name: "Blue Stone", len: 0.62 },
+    { file: "jhumka_ruby", name: "Ruby Drop", len: 0.55 },
+    { file: "jhumka_chandelier", name: "Chandelier", len: 0.62 },
+  ],
+  bangles: [
+    { file: "bangles_color", name: "Painted" },
+    { file: "bangles_jewel", name: "Jewelled" },
+  ],
+  vanity: ["v_powder", "v_palette", "v_redcompact", "v_lipstick", "v_gloss", "v_liners", "v_cushion", "bangle_stand"],
+};
+const USER_IMG = {};
+
+function loadUserArt() {
+  const load = (folder, file) =>
+    loadImage("assets/" + folder + "/" + file + ".png", (img) => (USER_IMG[file] = img), () => {});
+  for (const o of USER_ART.outfits) load("outfits", o.file);
+  for (const j of USER_ART.jhumkas) load("jhumkas", j.file);
+  for (const b of USER_ART.bangles) load("bangles", b.file);
+  for (const v of USER_ART.vanity) load(v === "bangle_stand" ? "bangles" : "vanity", v);
+}
+
 function loadOverrides() {
+  loadUserArt();
   for (const name of OVERRIDES) {
     loadImage(
       "assets/" + name + ".png",
@@ -644,9 +682,16 @@ function buildArt() {
   ART.bindis = [];
   for (let i = 0; i < 6; i++) ART.bindis.push(OVERRIDE_IMG["bindi_" + (i + 1)] || artBindi(i));
   ART.jhumka = OVERRIDE_IMG.jhumka || artJhumka();
-  ART.bangles = OVERRIDE_IMG.bangles || null; // drawn live around the wrist if no image
+  ART.jhumkas = [];
+  for (const j of USER_ART.jhumkas) if (USER_IMG[j.file]) ART.jhumkas.push({ img: USER_IMG[j.file], name: j.name, len: j.len });
+  ART.jhumkas.push({ img: ART.jhumka, name: "Classic", len: 0.42 });
+  ART.bangles = [];
+  for (const b of USER_ART.bangles) if (USER_IMG[b.file]) ART.bangles.push({ img: USER_IMG[b.file], name: b.name });
+  if (!ART.bangles.length) ART.bangles.push({ img: null, name: "Glass" }); // drawn live if no images
   ART.outfits = [];
-  for (let i = 0; i < 6; i++) ART.outfits.push(OVERRIDE_IMG["outfit_" + (i + 1)] || artOutfit(i));
+  for (const o of USER_ART.outfits) if (USER_IMG[o.file]) ART.outfits.push(Object.assign({ img: USER_IMG[o.file] }, o));
+  for (let i = 0; i < 6; i++)
+    ART.outfits.push({ img: OVERRIDE_IMG["outfit_" + (i + 1)] || artOutfit(i), name: OUTFIT_NAMES[i], shoulder: 0.667, cx: 0.5, span: 2.3, drop: 0.12 });
   ART.chappal = OVERRIDE_IMG.chappal || artChappal();
   ART.aunty = OVERRIDE_IMG.aunty || artAunty(false);
   ART.auntyThrow = OVERRIDE_IMG.aunty_throw || OVERRIDE_IMG.aunty || artAunty(true);
@@ -770,6 +815,26 @@ function buildTableLayer() {
   const base = top + 30 * s;
   const lx = M.x - L.frameW;
   const rx = M.x + M.w + L.frameW;
+  // back row: Leo's Pinterest makeup, sitting further back on the table
+  const back = top + 14 * s;
+  const put = (file, x, h, rot) => {
+    const img = USER_IMG[file];
+    if (!img) return;
+    const w = (img.width / img.height) * h;
+    g.push();
+    g.translate(x, back);
+    if (rot) g.rotate(rot);
+    g.image(img, -w / 2, -h, w, h);
+    g.pop();
+  };
+  put("v_powder", lx - 400 * s, 92 * s);
+  put("v_palette", lx - 330 * s, 118 * s, -0.05);
+  put("v_cushion", lx - 112 * s, 74 * s);
+  put("v_liners", lx - 32 * s, 120 * s, 0.12);
+  put("v_gloss", rx + 22 * s, 104 * s, -0.06);
+  put("v_redcompact", rx + 228 * s, 104 * s);
+  put("v_lipstick", rx + 318 * s, 86 * s, 0.1);
+  put("bangle_stand", rx + 372 * s, 128 * s);
   // left cluster (spills a bit in front of the mirror)
   drawPalette(g, lx - 210 * s, base, s);
   drawFoundation(g, lx - 300 * s, base, s);

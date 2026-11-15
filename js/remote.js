@@ -11,6 +11,8 @@ const REMOTE = {
   db: null,
   lastSeq: null,
   tilt: 0,
+  aimX: 0, // -1..1 from the phone's tilt, for Bindi Flick
+  aimY: 0,
   phoneSeenAt: -99999,
   qr: null,
   url: "",
@@ -47,6 +49,8 @@ function remoteStart(onAction) {
         if (!v) return;
         REMOTE.phoneSeenAt = millis();
         if (typeof v.tilt === "number") REMOTE.tilt = v.tilt;
+        if (typeof v.aimX === "number") REMOTE.aimX = v.aimX;
+        if (typeof v.aimY === "number") REMOTE.aimY = v.aimY;
         if (REMOTE.lastSeq === null) {
           REMOTE.lastSeq = v.seq || 0; // don't replay an old action on connect
           return;

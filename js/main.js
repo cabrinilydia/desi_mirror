@@ -3,10 +3,11 @@
    A desi dressing-table mirror that gets you ready for a family function,
    in five chapters:
      1 Steam   breathe on the mirror (mic) and wipe it with your hand
-     2 Glam    bindi, kajal, lipstick, jhumkas, bangles that stick to you
+     2 Glam    bindi, jhumkas, bangles, shimmer, blush that stick to you
      3 Outfit  phone tilt / flick (gyroscope) to pick and toss outfits
-     4 Aunty   dodge the aunty's chappals with your head
+     4 Bindi   phone tilt aims, a flick throws a bindi that sticks to you
      5 Photo   frame it, 3-2-1, download your photo strip
+   (The Aunty chappal game is in js/ch_aunty.js, switched off for now.)
 
    Webcam + ml5 faceMesh / handPose (computer vision), mic input,
    phone sensors through Firebase (remote interaction), all in p5.js.
@@ -29,7 +30,7 @@ function preload() {
 function setup() {
   createCanvas(windowWidth, windowHeight);
   pixelDensity(1);
-  CH = [Steam, Glam, Outfit, Aunty, Photo];
+  CH = [Steam, Glam, Outfit, BindiFlick, Photo];
   layout();
   buildArt();
   rebuildLayers();
@@ -247,6 +248,9 @@ function drawStart() {
   uiFont(15);
   fill(255, 200, 210);
   text("allow the camera and microphone when asked", width / 2, height * 0.71);
+  uiFont(13);
+  fill(255, 190, 200);
+  text("outfit, jewellery and makeup illustrations from Pinterest artists incl. @deepthidesigns, Zevar_sketch_by_Zoya and Dòra Harcos", width / 2, height - 30);
   pop();
 }
 
@@ -267,7 +271,7 @@ function goChapter(i) {
 }
 
 function onRemoteAction(a) {
-  if (chapter === 2) Outfit.action(a);
+  if (CH[chapter].action) CH[chapter].action(a);
 }
 
 function mousePressed() {
@@ -275,7 +279,7 @@ function mousePressed() {
     begin();
     return;
   }
-  uiMousePressed();
+  if (!uiMousePressed() && CH[chapter].mouse) CH[chapter].mouse();
 }
 
 function keyPressed() {

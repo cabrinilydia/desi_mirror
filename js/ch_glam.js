@@ -1,7 +1,7 @@
 /* Chapter 2 · Glam
    The glam tray on the left. Point at a button (hold your fingertip on it
-   for a moment) or click it. Bindi sticks to your forehead, jhumkas to your
-   ears, bangles to your wrists, makeup to your face.
+   for a moment) or click it. The bindi sticks to your forehead, jhumkas
+   hang from your ears and swing, bangles slide onto your wrists.
 */
 
 const Glam = {
@@ -14,21 +14,21 @@ const Glam = {
 
   surprise() {
     look.bindi = Math.floor(random(ART.bindis.length));
-    look.lips = Math.floor(random(LIP_SHADES.length));
-    look.kajal = true;
+    look.jhumka = Math.floor(random(ART.jhumkas.length));
+    look.bangles = Math.floor(random(ART.bangles.length));
     look.shimmer = random() < 0.6;
     look.blush = true;
-    look.jhumka = true;
-    look.bangles = true;
   },
 
   drawUI() {
     const P = L.left;
     const cols = 4;
-    const r = Math.min(28 * L.s, (P.w - 20) / (cols * 2 + (cols - 1) * 0.7));
+    const r = Math.min(27 * L.s, (P.w - 20) / (cols * 2 + (cols - 1) * 0.7));
     const gap = r * 2 + r * 0.7;
+    const rowStep = gap + 4;
     const x0 = P.x + r + 10;
-    let y = P.y + 6;
+    let y = P.y + 4;
+
     push();
     uiFont(26, true);
     fill(PAL.cream);
@@ -36,7 +36,7 @@ const Glam = {
     textAlign(LEFT, TOP);
     text("Glam tray", P.x + 10, y);
     pop();
-    y += 44;
+    y += 42;
 
     const section = (title) => {
       push();
@@ -48,83 +48,53 @@ const Glam = {
       pop();
       y += 22 + r;
     };
-    const rowStep = gap + 8;
+    const grid = (items, key) => {
+      items.forEach((it, i) => {
+        const cx = x0 + (i % cols) * gap;
+        const cy = y + Math.floor(i / cols) * rowStep;
+        uiButton(key + i, cx, cy, r, it.icon, it.press, { active: it.active });
+      });
+      y += rowStep * Math.ceil(items.length / cols) - r + 2;
+    };
 
     section("Bindi");
-    ART.bindis.forEach((img, i) => {
-      const cx = x0 + (i % cols) * gap;
-      const cy = y + Math.floor(i / cols) * rowStep;
-      uiButton(
-        "bindi" + i,
-        cx,
-        cy,
-        r,
-        (x, yy, rr) => {
-          imageMode(CENTER);
-          image(img, x, yy, rr * 1.25, rr * 1.25);
-          imageMode(CORNER);
-        },
-        () => (look.bindi = look.bindi === i ? -1 : i),
-        { active: look.bindi === i }
-      );
-    });
-    y += rowStep * Math.ceil(ART.bindis.length / cols) - r + 4;
+    grid(
+      ART.bindis.map((img, i) => ({
+        icon: (x, yy, rr) => fitImage(img, x, yy, rr * 1.25),
+        press: () => (look.bindi = look.bindi === i ? -1 : i),
+        active: look.bindi === i,
+      })),
+      "bindi"
+    );
 
-    section("Lips");
-    LIP_SHADES.forEach((s, i) => {
-      const cx = x0 + (i % cols) * gap;
-      uiButton(
-        "lips" + i,
-        cx,
-        y,
-        r,
-        (x, yy, rr) => {
-          noStroke();
-          fill(s.c[0], s.c[1], s.c[2]);
-          ellipse(x, yy, rr * 1.2, rr * 0.7);
-          fill(255, 255, 255, 90);
-          ellipse(x - rr * 0.15, yy - rr * 0.12, rr * 0.4, rr * 0.14);
-          stroke(PAL.ink);
-          strokeWeight(1.5);
-          noFill();
-          line(x - rr * 0.6, yy, x + rr * 0.6, yy);
-        },
-        () => (look.lips = look.lips === i ? -1 : i),
-        { active: look.lips === i }
-      );
-    });
-    y += rowStep - r + 4;
+    section("Jhumkas");
+    grid(
+      ART.jhumkas.map((J, i) => ({
+        icon: (x, yy, rr) => fitImage(J.img, x, yy, rr * 1.6),
+        press: () => (look.jhumka = look.jhumka === i ? -1 : i),
+        active: look.jhumka === i,
+      })),
+      "jhumka"
+    );
 
-    section("Extras");
-    const extras = [
-      ["kajal", "Kajal", iconKajal],
-      ["shimmer", "Shimmer", iconShimmer],
-      ["blush", "Blush", iconBlush],
-      ["jhumka", "Jhumkas", iconJhumka],
-      ["bangles", "Bangles", iconBangles],
-    ];
-    extras.forEach(([key, label, fn], i) => {
-      const cx = x0 + (i % cols) * gap;
-      const cy = y + Math.floor(i / cols) * rowStep;
-      uiButton(key, cx, cy, r, fn, () => (look[key] = !look[key]), { active: look[key] });
-    });
-    const sy = y + rowStep;
-    uiPill("surprise", x0 + gap - r * 0.2, sy - r * 0.55, gap * 2.2, r * 1.15, "surprise me ✦", () => this.surprise());
+    section("Bangles & glow");
+    const extras = ART.bangles.map((B, i) => ({
+      icon: B.img ? (x, yy, rr) => fitImage(B.img, x, yy, rr * 1.5) : iconBangles,
+      press: () => (look.bangles = look.bangles === i ? -1 : i),
+      active: look.bangles === i,
+    }));
+    extras.push({ icon: iconShimmer, press: () => (look.shimmer = !look.shimmer), active: look.shimmer });
+    extras.push({ icon: iconBlush, press: () => (look.blush = !look.blush), active: look.blush });
+    grid(extras, "extra");
+
+    uiPill("surprise", P.x + 10, y + 8, gap * 2.6, r * 1.15, "surprise me ✦", () => this.surprise());
   },
 };
 
-function iconKajal(x, y, r) {
-  push();
-  noFill();
-  stroke(20);
-  strokeWeight(3);
-  arc(x, y + r * 0.15, r * 1.2, r * 0.8, PI, TWO_PI);
-  arc(x, y - r * 0.15, r * 1.2, r * 0.8, 0, PI);
-  line(x + r * 0.6, y - r * 0.05, x + r * 0.85, y - r * 0.3);
-  fill(20);
-  noStroke();
-  ellipse(x, y, r * 0.35, r * 0.35);
-  pop();
+// draw an image centred at (x, y), fitting inside a size × size box
+function fitImage(img, x, y, size) {
+  const k = size / Math.max(img.width, img.height);
+  image(img, x - (img.width * k) / 2, y - (img.height * k) / 2, img.width * k, img.height * k);
 }
 
 function iconShimmer(x, y, r) {
@@ -151,12 +121,6 @@ function iconBlush(x, y, r) {
     ellipse(x, y, (r * k) / 3, (r * k) / 3);
   }
   pop();
-}
-
-function iconJhumka(x, y, r) {
-  const h = r * 1.5;
-  const w = (h * ART.jhumka.width) / ART.jhumka.height;
-  image(ART.jhumka, x - w / 2, y - h / 2, w, h);
 }
 
 function iconBangles(x, y, r) {
